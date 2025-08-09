@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Minimal Design System - AI Media Research Platform */
+
+@layer base {
+  :root {
+    /* Dark theme colors */
+    --background: 220 13% 6%;
+    --foreground: 220 8% 95%;
+
+    --card: 220 13% 8%;
+    --card-foreground: 220 8% 95%;
+
+    --popover: 220 13% 8%;
+    --popover-foreground: 220 8% 95%;
+
+    --primary: 47 96% 53%;
+    --primary-foreground: 220 13% 6%;
+
+    --secondary: 220 13% 12%;
+    --secondary-foreground: 220 8% 85%;
+
+    --muted: 220 13% 12%;
+    --muted-foreground: 220 8% 65%;
+
+    --accent: 220 13% 15%;
+    --accent-foreground: 220 8% 95%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 220 8% 95%;
+
+    --border: 220 13% 18%;
+    --input: 220 13% 15%;
+    --ring: 47 96% 53%;
+
+    --radius: 8px;
+
+    /* AI Platform specific colors */
+    --ai-blue: 217 91% 60%;
+    --ai-purple: 262 83% 58%;
+    --ai-green: 142 71% 45%;
+    --ai-red: 0 72% 51%;
+    
+    /* Surface colors */
+    --surface-primary: 220 13% 8%;
+    --surface-secondary: 220 13% 12%;
+    --surface-tertiary: 220 13% 15%;
+    
+    /* Text hierarchy */
+    --text-primary: 220 8% 95%;
+    --text-secondary: 220 8% 75%;
+    --text-tertiary: 220 8% 55%;
+    
+    /* Status colors */
+    --success: 142 71% 45%;
+    --warning: 45 93% 47%;
+    --error: 0 72% 51%;
+    --info: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-outfit antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-primary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-tertiary rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted;
+  }
+}

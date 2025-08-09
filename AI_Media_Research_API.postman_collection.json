@@ -1,0 +1,229 @@
+{
+  "info": {
+    "name": "AI Media Research & Strategy API",
+    "description": "Complete API collection for AI-powered market research, competitor analysis, and media strategy planning with PPTX/PDF/DOCX report generation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "x-api-key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{API_KEY}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "API_KEY",
+      "value": "your-api-key-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/health",
+          "host": ["{{BASE_URL}}"],
+          "path": ["health"]
+        },
+        "description": "Check API health status"
+      },
+      "response": []
+    },
+    {
+      "name": "Research - Competitor Analysis",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"brand\": \"Tesla\",\n  \"country\": \"United States\",\n  \"industry\": \"Electric Vehicles\",\n  \"max_results\": 12,\n  \"language\": \"en\",\n  \"use_cache\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/research",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "research"]
+        },
+        "description": "Perform deep competitor research using Jina AI. Returns competitors, market trends, ad insights, and sources."
+      },
+      "response": []
+    },
+    {
+      "name": "Research - SaaS Example",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"brand\": \"Slack\",\n  \"country\": \"Global\",\n  \"industry\": \"SaaS Communication\",\n  \"max_results\": 15,\n  \"language\": \"en\",\n  \"use_cache\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/research",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "research"]
+        },
+        "description": "Research SaaS competitors and market insights"
+      },
+      "response": []
+    },
+    {
+      "name": "Strategy - Create Media Plan",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"brand\": \"Tesla\",\n  \"industry\": \"Electric Vehicles\",\n  \"goals\": [\"awareness\", \"consideration\", \"leads\"],\n  \"budget_usd\": 50000,\n  \"country\": \"United States\",\n  \"time_horizon_months\": 6,\n  \"language\": \"en\",\n  \"use_cache\": true,\n  \"research\": {\n    \"brand\": \"Tesla\",\n    \"country\": \"United States\",\n    \"industry\": \"Electric Vehicles\",\n    \"competitors\": [\n      {\n        \"name\": \"Rivian\",\n        \"website\": \"https://rivian.com\",\n        \"summary\": \"Electric pickup truck and delivery van manufacturer\"\n      },\n      {\n        \"name\": \"Lucid Motors\",\n        \"website\": \"https://lucidmotors.com\",\n        \"summary\": \"Luxury electric sedan manufacturer\"\n      }\n    ],\n    \"trends\": [\n      \"Growing adoption of electric vehicles\",\n      \"Focus on sustainable transportation\",\n      \"Government incentives for EV adoption\"\n    ],\n    \"ad_insights\": [\n      \"Video content performs well for EV demos\",\n      \"LinkedIn effective for B2B fleet sales\",\n      \"YouTube pre-roll for awareness campaigns\"\n    ],\n    \"sources\": [\n      {\n        \"title\": \"EV Market Analysis 2024\",\n        \"url\": \"https://example.com/ev-report\",\n        \"summary\": \"Comprehensive market analysis\"\n      }\n    ],\n    \"summary\": \"Research on Tesla with key competitors and market trends\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/strategy",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "strategy"]
+        },
+        "description": "Generate media strategy plan using Groq AI based on research insights. Requires research data from /api/research."
+      },
+      "response": []
+    },
+    {
+      "name": "Workflow - End-to-End",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"brand\": \"Airbnb\",\n  \"country\": \"Global\",\n  \"industry\": \"Travel & Hospitality\",\n  \"goals\": [\"awareness\", \"bookings\"],\n  \"budget_usd\": 75000,\n  \"time_horizon_months\": 4,\n  \"max_results\": 10\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/workflow",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "workflow"]
+        },
+        "description": "Complete workflow: research + strategy in one call. Returns both research and strategy objects."
+      },
+      "response": []
+    },
+    {
+      "name": "Generate PPTX Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"brand\": \"Tesla\",\n  \"language\": \"en\",\n  \"use_cache\": true,\n  \"research\": {\n    \"brand\": \"Tesla\",\n    \"country\": \"United States\",\n    \"industry\": \"Electric Vehicles\",\n    \"competitors\": [\n      {\n        \"name\": \"Rivian\",\n        \"website\": \"https://rivian.com\",\n        \"summary\": \"Electric pickup truck manufacturer\"\n      }\n    ],\n    \"trends\": [\"EV adoption growth\", \"Sustainability focus\"],\n    \"ad_insights\": [\"Video content effective\", \"YouTube for awareness\"],\n    \"sources\": [],\n    \"summary\": \"Tesla market research findings\"\n  },\n  \"strategy\": {\n    \"brand\": \"Tesla\",\n    \"total_budget_usd\": 50000,\n    \"allocations\": {\n      \"Google Ads\": 19000,\n      \"LinkedIn\": 11000,\n      \"Meta\": 9000,\n      \"YouTube\": 6000,\n      \"Twitter/X\": 2500,\n      \"Others\": 2500\n    },\n    \"content_plan\": {\n      \"Video\": {\"cadence_per_week\": 2, \"platforms\": [\"YouTube\", \"LinkedIn\"]},\n      \"Blog\": {\"cadence_per_week\": 1, \"platforms\": [\"Website\"]},\n      \"Social\": {\"cadence_per_week\": 3, \"platforms\": [\"LinkedIn\", \"Twitter/X\"]}\n    },\n    \"kpis\": [\"CTR\", \"CPC\", \"CPL\", \"Brand Awareness\"],\n    \"swot\": {\n      \"strengths\": [\"Brand recognition\", \"Innovation leader\"],\n      \"weaknesses\": [\"High price point\", \"Limited inventory\"],\n      \"opportunities\": [\"Global expansion\", \"New markets\"],\n      \"threats\": [\"Competition\", \"Regulation changes\"]\n    },\n    \"timeline\": [\n      {\"phase\": \"Setup\", \"start\": \"2024-01-01\", \"end\": \"2024-02-01\"},\n      {\"phase\": \"Optimization\", \"start\": \"2024-02-01\", \"end\": \"2024-04-01\"}\n    ],\n    \"media_calendar\": [\n      {\"week\": 1, \"channel\": \"Google Ads\", \"budget_usd\": 4750}\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/generate/pptx",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "generate", "pptx"]
+        },
+        "description": "Generate PowerPoint presentation with strategy insights, SWOT analysis, budget charts, and timeline."
+      },
+      "response": []
+    },
+    {
+      "name": "Generate PDF Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"brand\": \"Tesla\",\n  \"language\": \"en\",\n  \"use_cache\": true,\n  \"research\": {\n    \"brand\": \"Tesla\",\n    \"country\": \"United States\",\n    \"industry\": \"Electric Vehicles\",\n    \"competitors\": [\n      {\n        \"name\": \"Rivian\",\n        \"website\": \"https://rivian.com\",\n        \"summary\": \"Electric pickup truck manufacturer\"\n      }\n    ],\n    \"trends\": [\"EV adoption growth\", \"Sustainability focus\"],\n    \"ad_insights\": [\"Video content effective\", \"YouTube for awareness\"],\n    \"sources\": [],\n    \"summary\": \"Tesla market research findings\"\n  },\n  \"strategy\": {\n    \"brand\": \"Tesla\",\n    \"total_budget_usd\": 50000,\n    \"allocations\": {\n      \"Google Ads\": 19000,\n      \"LinkedIn\": 11000,\n      \"Meta\": 9000,\n      \"YouTube\": 6000,\n      \"Twitter/X\": 2500,\n      \"Others\": 2500\n    },\n    \"content_plan\": {\n      \"Video\": {\"cadence_per_week\": 2, \"platforms\": [\"YouTube\", \"LinkedIn\"]},\n      \"Blog\": {\"cadence_per_week\": 1, \"platforms\": [\"Website\"]},\n      \"Social\": {\"cadence_per_week\": 3, \"platforms\": [\"LinkedIn\", \"Twitter/X\"]}\n    },\n    \"kpis\": [\"CTR\", \"CPC\", \"CPL\", \"Brand Awareness\"],\n    \"swot\": {\n      \"strengths\": [\"Brand recognition\", \"Innovation leader\"],\n      \"weaknesses\": [\"High price point\", \"Limited inventory\"],\n      \"opportunities\": [\"Global expansion\", \"New markets\"],\n      \"threats\": [\"Competition\", \"Regulation changes\"]\n    },\n    \"timeline\": [\n      {\"phase\": \"Setup\", \"start\": \"2024-01-01\", \"end\": \"2024-02-01\"},\n      {\"phase\": \"Optimization\", \"start\": \"2024-02-01\", \"end\": \"2024-04-01\"}\n    ],\n    \"media_calendar\": [\n      {\"week\": 1, \"channel\": \"Google Ads\", \"budget_usd\": 4750}\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/generate/pdf",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "generate", "pdf"]
+        },
+        "description": "Generate comprehensive PDF report with executive summary, competitor analysis, and strategy recommendations."
+      },
+      "response": []
+    },
+    {
+      "name": "Generate DOCX Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"brand\": \"Tesla\",\n  \"language\": \"en\",\n  \"use_cache\": true,\n  \"research\": {\n    \"brand\": \"Tesla\",\n    \"country\": \"United States\",\n    \"industry\": \"Electric Vehicles\",\n    \"competitors\": [\n      {\n        \"name\": \"Rivian\",\n        \"website\": \"https://rivian.com\",\n        \"summary\": \"Electric pickup truck manufacturer\"\n      }\n    ],\n    \"trends\": [\"EV adoption growth\", \"Sustainability focus\"],\n    \"ad_insights\": [\"Video content effective\", \"YouTube for awareness\"],\n    \"sources\": [],\n    \"summary\": \"Tesla market research findings\"\n  },\n  \"strategy\": {\n    \"brand\": \"Tesla\",\n    \"total_budget_usd\": 50000,\n    \"allocations\": {\n      \"Google Ads\": 19000,\n      \"LinkedIn\": 11000,\n      \"Meta\": 9000,\n      \"YouTube\": 6000,\n      \"Twitter/X\": 2500,\n      \"Others\": 2500\n    },\n    \"content_plan\": {\n      \"Video\": {\"cadence_per_week\": 2, \"platforms\": [\"YouTube\", \"LinkedIn\"]},\n      \"Blog\": {\"cadence_per_week\": 1, \"platforms\": [\"Website\"]},\n      \"Social\": {\"cadence_per_week\": 3, \"platforms\": [\"LinkedIn\", \"Twitter/X\"]}\n    },\n    \"kpis\": [\"CTR\", \"CPC\", \"CPL\", \"Brand Awareness\"],\n    \"swot\": {\n      \"strengths\": [\"Brand recognition\", \"Innovation leader\"],\n      \"weaknesses\": [\"High price point\", \"Limited inventory\"],\n      \"opportunities\": [\"Global expansion\", \"New markets\"],\n      \"threats\": [\"Competition\", \"Regulation changes\"]\n    },\n    \"timeline\": [\n      {\"phase\": \"Setup\", \"start\": \"2024-01-01\", \"end\": \"2024-02-01\"},\n      {\"phase\": \"Optimization\", \"start\": \"2024-02-01\", \"end\": \"2024-04-01\"}\n    ],\n    \"media_calendar\": [\n      {\"week\": 1, \"channel\": \"Google Ads\", \"budget_usd\": 4750}\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/generate/docx",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "generate", "docx"]
+        },
+        "description": "Generate editable Word document with detailed market research and strategy plan."
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set dynamic timestamps",
+          "pm.globals.set('timestamp', new Date().getTime());"
+        ]
+      }
+    }
+  ]
+}
