@@ -867,7 +867,7 @@ def generate_enhanced_budget_chart(allocations: Dict[str, float]) -> io.BytesIO:
     return buf
 
 
-async def call_groq_doc_sections(
+async def call_groq_media_brief_sections(
     research: ResearchResult,
     strategy: StrategyPlan,
     doc_type: str,
@@ -894,22 +894,44 @@ async def call_groq_doc_sections(
         if cached_time and (datetime.utcnow() - cached_time).total_seconds() < 60 * 60 * 12:
             return cached["data"]
     system_prompt = (
-        "You are a senior strategy copywriter and media planner. Return one JSON object only. "
+        "You are a senior media strategist and briefing expert. Generate a comprehensive media brief document. Return one JSON object only. "
         "Output schema: {\n"
-        "  \"executive_summary\": string,\n"
-        "  \"key_findings\": [string],\n"
-        "  \"competitor_insights\": [string],\n"
-        "  \"recommendations\": [string],\n"
-        "  \"timeline_bullets\": [string],\n"
-        "  \"swot\": { \"strengths\": [string], \"weaknesses\": [string], \"opportunities\": [string], \"threats\": [string] }\n"
+        "  \"client_info\": { \"brand\": string, \"product\": string, \"brief_prepared_by\": string, \"date_of_briefing\": string, \"deadline\": string },\n"
+        "  \"marketing_objectives\": string,\n"
+        "  \"communication_objectives\": string,\n"
+        "  \"tone_manner\": string,\n"
+        "  \"media_objectives\": string,\n"
+        "  \"brand_positioning\": string,\n"
+        "  \"brand_proposition\": string,\n"
+        "  \"desired_response\": string,\n"
+        "  \"reason_to_believe\": string,\n"
+        "  \"target_audience\": { \"demographics\": string, \"psychographics\": string, \"day_in_life\": string },\n"
+        "  \"unreached_audience\": string,\n"
+        "  \"media_considerations\": string,\n"
+        "  \"legal_requirements\": string,\n"
+        "  \"creative_considerations\": string,\n"
+        "  \"seasonality\": string,\n"
+        "  \"geographic_considerations\": string,\n"
+        "  \"timing_considerations\": string,\n"
+        "  \"budget_provisions\": string,\n"
+        "  \"digital_kpis\": string,\n"
+        "  \"campaign_duration\": string,\n"
+        "  \"creative_assets\": string,\n"
+        "  \"website_objectives\": string,\n"
+        "  \"conversion_tracking\": string\n"
         "}. Respond in the requested language if provided."
     )
     user_prompt = (
+        f"Generate a comprehensive media brief for: {research.brand}\n"
+        f"Industry: {research.industry or 'Not specified'}\n"
+        f"Target Market: {research.country or 'Global'}\n"
+        f"Budget: ${strategy.total_budget_usd:,.0f}\n"
         f"Document type: {doc_type}\n"
         f"Language: {language or 'en'}\n"
-        f"Research JSON: {json.dumps(research.dict(), ensure_ascii=False)}\n"
-        f"Strategy JSON: {json.dumps(strategy.dict(), ensure_ascii=False)}\n"
-        f"Produce concise and executive-ready content following the schema."
+        f"Research Data: {json.dumps(research.dict(), ensure_ascii=False)}\n"
+        f"Strategy Data: {json.dumps(strategy.dict(), ensure_ascii=False)}\n"
+        f"Generate a professional media brief with all required sections populated based on the research and strategy data. "
+        f"Use today's date for briefing date and set deadline 30 days from today. Fill in realistic and strategic content for each field."
     )
     url = os.getenv("GROQ_API_URL", "https://api.groq.com/openai/v1/chat/completions")
     model = os.getenv("GROQ_MODEL", "llama3-70b-8192")
@@ -946,7 +968,7 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     from pptx.enum.shapes import MSO_SHAPE
     
     try:
-        sections = await call_groq_doc_sections(research, strategy, doc_type="pptx", language=language, use_cache=use_cache)
+        sections = await call_groq_media_brief_sections(research, strategy, doc_type="pptx", language=language, use_cache=use_cache)
     except HTTPException:
         sections = {}
     
@@ -960,7 +982,7 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     light_gray = RGBColor(245, 245, 245)      # Light background
     dark_gray = RGBColor(66, 66, 66)          # Dark text
     
-    # 🎨 SLIDE 1: STUNNING TITLE SLIDE
+    # 🎨 SLIDE 1: MEDIA BRIEF TITLE SLIDE
     title_layout = prs.slide_layouts[6]  # Blank layout for custom design
     slide = prs.slides.add_slide(title_layout)
     
@@ -974,44 +996,47 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     
     # Accent stripe
     accent_stripe = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, 0, 0, Inches(2), prs.slide_height
+        MSO_SHAPE.RECTANGLE, 0, 0, Inches(2), prs.slide_width
     )
     stripe_fill = accent_stripe.fill
     stripe_fill.solid()
     stripe_fill.fore_color.rgb = primary_color
     
-    # Modern title with custom positioning
+    # Media Brief Title
     title_box = slide.shapes.add_textbox(Inches(2.5), Inches(2), Inches(7), Inches(2))
     title_frame = title_box.text_frame
     title_frame.clear()
     title_para = title_frame.paragraphs[0]
-    title_para.text = f"🚀 {brand.upper()}"
+    title_para.text = "MEDIA BRIEF"
     title_para.font.size = Pt(48)
     title_para.font.bold = True
     title_para.font.color.rgb = primary_color
     title_para.alignment = PP_ALIGN.LEFT
     
-    # Subtitle with style
+    # Brand/Product subtitle
     subtitle_box = slide.shapes.add_textbox(Inches(2.5), Inches(3.2), Inches(7), Inches(1.5))
     subtitle_frame = subtitle_box.text_frame
     subtitle_frame.clear()
     subtitle_para = subtitle_frame.paragraphs[0]
-    subtitle_para.text = "MEDIA STRATEGY & MARKET INTELLIGENCE"
+    client_info = sections.get("client_info", {}) if isinstance(sections, dict) else {}
+    subtitle_para.text = f"Brand: {brand.upper()} | Product: {client_info.get('product', research.industry)}"
     subtitle_para.font.size = Pt(18)
     subtitle_para.font.color.rgb = accent_color
     subtitle_para.alignment = PP_ALIGN.LEFT
     
-    # Tagline
-    tagline_box = slide.shapes.add_textbox(Inches(2.5), Inches(4.2), Inches(7), Inches(1))
-    tagline_frame = tagline_box.text_frame
-    tagline_frame.clear()
-    tagline_para = tagline_frame.paragraphs[0]
-    tagline_para.text = f"🎯 {research.industry} | 🌍 {research.country} | 📊 Competitive Intelligence"
-    tagline_para.font.size = Pt(14)
-    tagline_para.font.color.rgb = dark_gray
-    tagline_para.alignment = PP_ALIGN.LEFT
+    # Brief details
+    details_box = slide.shapes.add_textbox(Inches(2.5), Inches(4.2), Inches(7), Inches(1.5))
+    details_frame = details_box.text_frame
+    details_frame.clear()
+    details_para = details_frame.paragraphs[0]
+    brief_date = client_info.get('date_of_briefing', datetime.utcnow().strftime('%Y-%m-%d'))
+    deadline = client_info.get('deadline', (datetime.utcnow() + timedelta(days=30)).strftime('%Y-%m-%d'))
+    details_para.text = f"📅 Briefing Date: {brief_date} | ⏰ Deadline: {deadline}"
+    details_para.font.size = Pt(14)
+    details_para.font.color.rgb = dark_gray
+    details_para.alignment = PP_ALIGN.LEFT
 
-    # 🎨 SLIDE 2: EXECUTIVE SUMMARY WITH MODERN LAYOUT
+    # 🎨 SLIDE 2: MARKETING & COMMUNICATION OBJECTIVES
     layout = prs.slide_layouts[6]  # Blank for custom design
     slide = prs.slides.add_slide(layout)
     
@@ -1028,65 +1053,42 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     header_frame = header_title.text_frame
     header_frame.clear()
     header_para = header_frame.paragraphs[0]
-    header_para.text = "💡 EXECUTIVE SUMMARY"
-    header_para.font.size = Pt(24)
+    header_para.text = "1.0 MARKETING & COMMUNICATION OBJECTIVES"
+    header_para.font.size = Pt(22)
     header_para.font.bold = True
     header_para.font.color.rgb = RGBColor(255, 255, 255)
     header_para.alignment = PP_ALIGN.CENTER
     
-    # Content with modern styling
-    content_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.5), Inches(9), Inches(5))
-    content_frame = content_box.text_frame
-    content_frame.clear()
-    content_frame.margin_left = Inches(0.2)
-    content_frame.margin_top = Inches(0.2)
+    # Marketing Objectives Section
+    obj_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.5), Inches(9), Inches(2))
+    obj_frame = obj_box.text_frame
+    obj_frame.clear()
+    obj_frame.margin_left = Inches(0.2)
     
-    # Add executive summary content
-    exec_summary = (sections.get("executive_summary") if isinstance(sections, dict) else None) or research.summary
-    summary_para = content_frame.paragraphs[0]
-    summary_para.text = f"📈 {exec_summary}"
-    summary_para.font.size = Pt(16)
-    summary_para.font.color.rgb = dark_gray
-    summary_para.line_spacing = 1.3
+    marketing_obj_para = obj_frame.paragraphs[0]
+    marketing_objectives = sections.get("marketing_objectives", "") if isinstance(sections, dict) else ""
+    marketing_obj_para.text = f"1.1 MARKETING OBJECTIVES\n{marketing_objectives or f'Drive brand awareness and market penetration for {brand} in the {research.industry} sector with focus on {research.country} market.'}"
+    marketing_obj_para.font.size = Pt(14)
+    marketing_obj_para.font.color.rgb = dark_gray
+    marketing_obj_para.line_spacing = 1.3
     
-    # Key metrics in colored boxes
-    metrics = [
-        (f"🏢 {len(research.competitors)}", "COMPETITORS", success_color),
-        (f"📊 {len(research.trends)}", "MARKET TRENDS", accent_color),
-        (f"💰 ${strategy.total_budget_usd:,.0f}", "BUDGET", warning_color)
-    ]
+    # Communication Objectives Section
+    comm_para = obj_frame.add_paragraph()
+    comm_objectives = sections.get("communication_objectives", "") if isinstance(sections, dict) else ""
+    comm_para.text = f"\n1.2 COMMUNICATION OBJECTIVES\n{comm_objectives or 'Increase brand awareness, improve brand perception, and drive customer consideration through strategic media placement and messaging.'}"
+    comm_para.font.size = Pt(14)
+    comm_para.font.color.rgb = dark_gray
+    comm_para.line_spacing = 1.3
     
-    x_positions = [Inches(0.5), Inches(3.5), Inches(6.5)]
-    for i, (value, label, color) in enumerate(metrics):
-        metric_box = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE, x_positions[i], Inches(4.5), Inches(2.5), Inches(1.5)
-        )
-        metric_fill = metric_box.fill
-        metric_fill.solid()
-        metric_fill.fore_color.rgb = color
-        
-        # Value text
-        value_text = slide.shapes.add_textbox(x_positions[i], Inches(4.7), Inches(2.5), Inches(0.6))
-        value_frame = value_text.text_frame
-        value_frame.clear()
-        value_para = value_frame.paragraphs[0]
-        value_para.text = value
-        value_para.font.size = Pt(20)
-        value_para.font.bold = True
-        value_para.font.color.rgb = RGBColor(255, 255, 255)
-        value_para.alignment = PP_ALIGN.CENTER
-        
-        # Label text
-        label_text = slide.shapes.add_textbox(x_positions[i], Inches(5.3), Inches(2.5), Inches(0.4))
-        label_frame = label_text.text_frame
-        label_frame.clear()
-        label_para = label_frame.paragraphs[0]
-        label_para.text = label
-        label_para.font.size = Pt(10)
-        label_para.font.color.rgb = RGBColor(255, 255, 255)
-        label_para.alignment = PP_ALIGN.CENTER
+    # Tone & Manner Section
+    tone_para = obj_frame.add_paragraph()
+    tone_manner = sections.get("tone_manner", "") if isinstance(sections, dict) else ""
+    tone_para.text = f"\n1.3 TONE & MANNER\n{tone_manner or 'Professional, innovative, and trustworthy communication that resonates with target audience values and aspirations.'}"
+    tone_para.font.size = Pt(14)
+    tone_para.font.color.rgb = dark_gray
+    tone_para.line_spacing = 1.3
 
-    # 🎨 SLIDE 3: COMPETITIVE LANDSCAPE - MODERN CARD DESIGN
+    # 🎨 SLIDE 3: BRAND INFORMATION
     slide = prs.slides.add_slide(layout)
     
     # Header
@@ -1101,57 +1103,52 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     header_frame = header_title.text_frame
     header_frame.clear()
     header_para = header_frame.paragraphs[0]
-    header_para.text = "🏢 COMPETITIVE LANDSCAPE"
+    header_para.text = "2.0 BRAND INFORMATION"
     header_para.font.size = Pt(24)
     header_para.font.bold = True
     header_para.font.color.rgb = RGBColor(255, 255, 255)
     header_para.alignment = PP_ALIGN.CENTER
     
-    # Competitor cards in grid layout
-    competitors = research.competitors[:6]  # Top 6 competitors
-    card_width = Inches(2.8)
-    card_height = Inches(1.8)
+    # Brand sections
+    brand_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.5), Inches(9), Inches(4.5))
+    brand_frame = brand_box.text_frame
+    brand_frame.clear()
+    brand_frame.margin_left = Inches(0.2)
+    brand_frame.margin_top = Inches(0.2)
     
-    positions = [
-        (Inches(0.5), Inches(1.8)), (Inches(3.5), Inches(1.8)), (Inches(6.5), Inches(1.8)),
-        (Inches(0.5), Inches(4.0)), (Inches(3.5), Inches(4.0)), (Inches(6.5), Inches(4.0))
-    ]
+    # Brand Positioning
+    brand_positioning = sections.get("brand_positioning", "") if isinstance(sections, dict) else ""
+    pos_para = brand_frame.paragraphs[0]
+    pos_para.text = f"2.1 BRAND POSITIONING\n{brand_positioning or f'{brand} is positioned as a premium, innovative leader in the {research.industry} market, delivering superior value and customer experience.'}"
+    pos_para.font.size = Pt(14)
+    pos_para.font.color.rgb = dark_gray
+    pos_para.line_spacing = 1.3
     
-    card_colors = [primary_color, success_color, accent_color, warning_color, RGBColor(156, 39, 176), RGBColor(0, 150, 136)]
+    # Brand Proposition
+    brand_proposition = sections.get("brand_proposition", "") if isinstance(sections, dict) else ""
+    prop_para = brand_frame.add_paragraph()
+    prop_para.text = f"\n2.2 BRAND PROPOSITION\n{brand_proposition or f'Unique value proposition combining cutting-edge technology, superior quality, and exceptional customer service that sets {brand} apart from competitors.'}"
+    prop_para.font.size = Pt(14)
+    prop_para.font.color.rgb = dark_gray
+    prop_para.line_spacing = 1.3
     
-    for i, (comp, (x, y)) in enumerate(zip(competitors, positions)):
-        if i >= len(card_colors):
-            break
-            
-        # Card background
-        card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, card_width, card_height)
-        card_fill = card.fill
-        card_fill.solid()
-        card_fill.fore_color.rgb = card_colors[i % len(card_colors)]
-        
-        # Company name
-        name_box = slide.shapes.add_textbox(x + Inches(0.1), y + Inches(0.1), card_width - Inches(0.2), Inches(0.5))
-        name_frame = name_box.text_frame
-        name_frame.clear()
-        name_para = name_frame.paragraphs[0]
-        name_para.text = f"🏆 {comp.name}"
-        name_para.font.size = Pt(14)
-        name_para.font.bold = True
-        name_para.font.color.rgb = RGBColor(255, 255, 255)
-        name_para.alignment = PP_ALIGN.CENTER
-        
-        # Summary
-        summary_box = slide.shapes.add_textbox(x + Inches(0.1), y + Inches(0.7), card_width - Inches(0.2), card_height - Inches(0.8))
-        summary_frame = summary_box.text_frame
-        summary_frame.clear()
-        summary_frame.word_wrap = True
-        summary_para = summary_frame.paragraphs[0]
-        summary_para.text = (comp.summary or "Key market player")[:100] + "..."
-        summary_para.font.size = Pt(10)
-        summary_para.font.color.rgb = RGBColor(255, 255, 255)
-        summary_para.alignment = PP_ALIGN.LEFT
+    # Desired Response
+    desired_response = sections.get("desired_response", "") if isinstance(sections, dict) else ""
+    response_para = brand_frame.add_paragraph()
+    response_para.text = f"\n2.3 DESIRED RESPONSE\n{desired_response or 'Target customers should perceive our brand as the preferred choice, increase purchase consideration, and actively recommend to others.'}"
+    response_para.font.size = Pt(14)
+    response_para.font.color.rgb = dark_gray
+    response_para.line_spacing = 1.3
+    
+    # Reason to Believe
+    reason_believe = sections.get("reason_to_believe", "") if isinstance(sections, dict) else ""
+    reason_para = brand_frame.add_paragraph()
+    reason_para.text = f"\n2.4 REASON TO BELIEVE\n{reason_believe or 'Proven track record, customer testimonials, industry awards, and superior product performance validate our brand claims.'}"
+    reason_para.font.size = Pt(14)
+    reason_para.font.color.rgb = dark_gray
+    reason_para.line_spacing = 1.3
 
-    # 🎨 SLIDE 4: SWOT ANALYSIS - BEAUTIFUL 2x2 MATRIX
+    # 🎨 SLIDE 4: TARGET AUDIENCE
     slide = prs.slides.add_slide(layout)
     
     # Header
@@ -1166,56 +1163,53 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     header_frame = header_title.text_frame
     header_frame.clear()
     header_para = header_frame.paragraphs[0]
-    header_para.text = "🎯 SWOT ANALYSIS"
+    header_para.text = "🎯 TARGET AUDIENCE"
     header_para.font.size = Pt(24)
     header_para.font.bold = True
     header_para.font.color.rgb = RGBColor(255, 255, 255)
     header_para.alignment = PP_ALIGN.CENTER
     
-    # SWOT matrix with stunning design
-    swot_data = sections.get("swot") if isinstance(sections, dict) else strategy.swot
-    swot_items = [
-        ("💪 STRENGTHS", swot_data.get("strengths", []), success_color, Inches(0.5), Inches(1.5)),
-        ("⚠️ WEAKNESSES", swot_data.get("weaknesses", []), RGBColor(244, 67, 54), Inches(5), Inches(1.5)),
-        ("🌟 OPPORTUNITIES", swot_data.get("opportunities", []), RGBColor(33, 150, 243), Inches(0.5), Inches(4)),
-        ("⚡ THREATS", swot_data.get("threats", []), RGBColor(255, 152, 0), Inches(5), Inches(4))
-    ]
+    # Target audience sections
+    audience_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.5), Inches(9), Inches(4.5))
+    audience_frame = audience_box.text_frame
+    audience_frame.clear()
+    audience_frame.margin_left = Inches(0.2)
+    audience_frame.margin_top = Inches(0.2)
     
-    box_width = Inches(4)
-    box_height = Inches(2.2)
+    # Demographics
+    target_audience = sections.get("target_audience", {}) if isinstance(sections, dict) else {}
+    demo_para = audience_frame.paragraphs[0]
+    demographics = target_audience.get("demographics", "")
+    demo_para.text = f"2.2.1 DEMOGRAPHICS\n{demographics or f'Primary audience: {research.country} market, adults 25-54, middle to high income, tech-savvy professionals interested in {research.industry}.'}"
+    demo_para.font.size = Pt(14)
+    demo_para.font.color.rgb = dark_gray
+    demo_para.line_spacing = 1.3
     
-    for title, items, color, x, y in swot_items:
-        # Background box
-        swot_box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, box_width, box_height)
-        swot_fill = swot_box.fill
-        swot_fill.solid()
-        swot_fill.fore_color.rgb = color
-        
-        # Title
-        title_box = slide.shapes.add_textbox(x + Inches(0.1), y + Inches(0.1), box_width - Inches(0.2), Inches(0.5))
-        title_frame = title_box.text_frame
-        title_frame.clear()
-        title_para = title_frame.paragraphs[0]
-        title_para.text = title
-        title_para.font.size = Pt(16)
-        title_para.font.bold = True
-        title_para.font.color.rgb = RGBColor(255, 255, 255)
-        title_para.alignment = PP_ALIGN.CENTER
-        
-        # Items
-        items_box = slide.shapes.add_textbox(x + Inches(0.2), y + Inches(0.7), box_width - Inches(0.4), box_height - Inches(0.8))
-        items_frame = items_box.text_frame
-        items_frame.clear()
-        items_frame.word_wrap = True
-        
-        for item in items[:3]:  # Limit to 3 items per quadrant
-            p = items_frame.add_paragraph()
-            p.text = f"• {item}"
-            p.font.size = Pt(11)
-            p.font.color.rgb = RGBColor(255, 255, 255)
-            p.line_spacing = 1.2
+    # Psychographics
+    psycho_para = audience_frame.add_paragraph()
+    psychographics = target_audience.get("psychographics", "")
+    psycho_para.text = f"\n2.2.2 PSYCHOGRAPHICS/LIFESTYLE\n{psychographics or 'Values innovation, quality, and sustainability. Early adopters who influence others. Active on social media and research before purchasing.'}"
+    psycho_para.font.size = Pt(14)
+    psycho_para.font.color.rgb = dark_gray
+    psycho_para.line_spacing = 1.3
+    
+    # Day in the Life
+    life_para = audience_frame.add_paragraph()
+    day_in_life = target_audience.get("day_in_life", "")
+    life_para.text = f"\n2.2.3 DAY IN THE LIFE\n{day_in_life or 'Busy professionals who value efficiency. Start day checking news/social media, work-focused during business hours, evening leisure includes streaming and social browsing.'}"
+    life_para.font.size = Pt(14)
+    life_para.font.color.rgb = dark_gray
+    life_para.line_spacing = 1.3
+    
+    # Unreached Audience
+    unreached_para = audience_frame.add_paragraph()
+    unreached_audience = sections.get("unreached_audience", "") if isinstance(sections, dict) else ""
+    unreached_para.text = f"\n2.2.4 UNREACHED AUDIENCE\n{unreached_audience or 'Younger demographics (18-25) and emerging markets represent growth opportunities for brand expansion.'}"
+    unreached_para.font.size = Pt(14)
+    unreached_para.font.color.rgb = dark_gray
+    unreached_para.line_spacing = 1.3
 
-    # 🎨 SLIDE 5: BUDGET ALLOCATION - ENHANCED CHART
+    # 🎨 SLIDE 5: EXECUTIONAL CONSIDERATIONS
     slide = prs.slides.add_slide(layout)
     
     # Header
@@ -1230,56 +1224,45 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     header_frame = header_title.text_frame
     header_frame.clear()
     header_para = header_frame.paragraphs[0]
-    header_para.text = "💰 BUDGET ALLOCATION"
-    header_para.font.size = Pt(24)
+    header_para.text = "3.0 EXECUTIONAL CONSIDERATIONS"
+    header_para.font.size = Pt(22)
     header_para.font.bold = True
     header_para.font.color.rgb = RGBColor(255, 255, 255)
     header_para.alignment = PP_ALIGN.CENTER
     
-    # Enhanced budget chart
-    allocations = strategy.allocations
-    chart_buf = generate_enhanced_budget_chart(allocations)
-    image = slide.shapes.add_picture(chart_buf, Inches(0.5), Inches(1.5), width=Inches(9))
+    # Executional considerations sections
+    exec_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.5), Inches(9), Inches(4.5))
+    exec_frame = exec_box.text_frame
+    exec_frame.clear()
+    exec_frame.margin_left = Inches(0.2)
+    exec_frame.margin_top = Inches(0.2)
     
-    # Budget breakdown table
-    table_data = [["CHANNEL", "BUDGET", "PERCENTAGE"]]
-    total_budget = sum(allocations.values())
+    # Media Considerations
+    media_considerations = sections.get("media_considerations", "") if isinstance(sections, dict) else ""
+    media_para = exec_frame.paragraphs[0]
+    media_para.text = f"3.1 MEDIA CONSIDERATIONS\n{media_considerations or f'Focus on digital channels: Google Ads, Social Media, YouTube. Budget allocation: {strategy.allocations}'}"
+    media_para.font.size = Pt(12)
+    media_para.font.color.rgb = dark_gray
+    media_para.line_spacing = 1.2
     
-    for channel, amount in allocations.items():
-        percentage = (amount / total_budget) * 100 if total_budget > 0 else 0
-        table_data.append([
-            f"🎯 {channel}",
-            f"${amount:,.0f}",
-            f"{percentage:.1f}%"
-        ])
+    # Budget Provisions
+    budget_provisions = sections.get("budget_provisions", "") if isinstance(sections, dict) else ""
+    budget_para = exec_frame.add_paragraph()
+    budget_para.text = f"\n3.2 BUDGET PROVISIONS\nTotal Budget: ${strategy.total_budget_usd:,.0f}\n{budget_provisions or 'Budget allocated across multiple channels with flexibility for optimization based on performance metrics.'}"
+    budget_para.font.size = Pt(12)
+    budget_para.font.color.rgb = dark_gray
+    budget_para.line_spacing = 1.2
     
-    # Add table below chart
-    table_shape = slide.shapes.add_table(len(table_data), 3, Inches(10.5), Inches(1.5), Inches(3), Inches(3))
-    table = table_shape.table
-    
-    # Style the table
-    for i, row_data in enumerate(table_data):
-        for j, cell_data in enumerate(row_data):
-            cell = table.cell(i, j)
-            cell.text = cell_data
-            
-            if i == 0:  # Header row
-                cell.fill.solid()
-                cell.fill.fore_color.rgb = primary_color
-                for paragraph in cell.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.color.rgb = RGBColor(255, 255, 255)
-                        run.font.bold = True
-                        run.font.size = Pt(12)
-            else:
-                cell.fill.solid()
-                cell.fill.fore_color.rgb = light_gray
-                for paragraph in cell.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.color.rgb = dark_gray
-                        run.font.size = Pt(11)
+    # Timing Considerations
+    timing_considerations = sections.get("timing_considerations", "") if isinstance(sections, dict) else ""
+    timing_para = exec_frame.add_paragraph()
+    timing_default = f"Campaign launch: {strategy.timeline[0]['start'] if strategy.timeline else 'Q1 2024'}. Timeline: {len(strategy.timeline)} phases over {strategy.timeline[-1]['end'] if strategy.timeline else '6 months'}."
+    timing_para.text = f"\n3.3 TIMING CONSIDERATIONS\n{timing_considerations or timing_default}"
+    timing_para.font.size = Pt(12)
+    timing_para.font.color.rgb = dark_gray
+    timing_para.line_spacing = 1.2
 
-    # 🎨 SLIDE 6: TIMELINE & ROADMAP
+    # 🎨 SLIDE 6: DIGITAL CAMPAIGN SPECIFICS
     slide = prs.slides.add_slide(layout)
     
     # Header
@@ -1294,40 +1277,45 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     header_frame = header_title.text_frame
     header_frame.clear()
     header_para = header_frame.paragraphs[0]
-    header_para.text = "🗓️ STRATEGIC ROADMAP"
-    header_para.font.size = Pt(24)
+    header_para.text = "4.0 DIGITAL CAMPAIGN SPECIFICS"
+    header_para.font.size = Pt(22)
     header_para.font.bold = True
     header_para.font.color.rgb = RGBColor(255, 255, 255)
     header_para.alignment = PP_ALIGN.CENTER
     
-    # Timeline visualization
-    timeline_colors = [primary_color, success_color, accent_color, warning_color]
-    y_start = Inches(2)
+    # Digital campaign sections
+    digital_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.5), Inches(9), Inches(4.5))
+    digital_frame = digital_box.text_frame
+    digital_frame.clear()
+    digital_frame.margin_left = Inches(0.2)
+    digital_frame.margin_top = Inches(0.2)
     
-    for i, phase in enumerate(strategy.timeline[:4]):
-        color = timeline_colors[i % len(timeline_colors)]
-        y_pos = y_start + Inches(i * 1.2)
-        
-        # Phase box
-        phase_box = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), y_pos, Inches(8.5), Inches(1)
-        )
-        phase_fill = phase_box.fill
-        phase_fill.solid()
-        phase_fill.fore_color.rgb = color
-        
-        # Phase text
-        phase_text = slide.shapes.add_textbox(Inches(0.7), y_pos + Inches(0.1), Inches(8.1), Inches(0.8))
-        phase_frame = phase_text.text_frame
-        phase_frame.clear()
-        phase_para = phase_frame.paragraphs[0]
-        phase_para.text = f"📅 {phase['phase']}: {phase['start']} → {phase['end']}"
-        phase_para.font.size = Pt(16)
-        phase_para.font.bold = True
-        phase_para.font.color.rgb = RGBColor(255, 255, 255)
-        phase_para.alignment = PP_ALIGN.LEFT
+    # KPIs
+    digital_kpis = sections.get("digital_kpis", "") if isinstance(sections, dict) else ""
+    kpi_para = digital_frame.paragraphs[0]
+    kpi_para.text = f"4.1 KEY PERFORMANCE INDICATORS\n{digital_kpis or f'Primary KPIs: {', '.join(strategy.kpis[:5])}'}"
+    kpi_para.font.size = Pt(14)
+    kpi_para.font.color.rgb = dark_gray
+    kpi_para.line_spacing = 1.3
+    
+    # Campaign Duration
+    campaign_duration = sections.get("campaign_duration", "") if isinstance(sections, dict) else ""
+    duration_para = digital_frame.add_paragraph()
+    duration_para.text = f"\n4.2 CAMPAIGN DURATION\n{campaign_duration or f'Campaign runs for {len(strategy.timeline)} phases, approximately {len(strategy.media_calendar) // 4} months with continuous optimization.'}"
+    duration_para.font.size = Pt(14)
+    duration_para.font.color.rgb = dark_gray
+    duration_para.line_spacing = 1.3
+    
+    # Website & Tracking
+    website_objectives = sections.get("website_objectives", "") if isinstance(sections, dict) else ""
+    conversion_tracking = sections.get("conversion_tracking", "") if isinstance(sections, dict) else ""
+    web_para = digital_frame.add_paragraph()
+    web_para.text = f"\n4.3 WEBSITE & CONVERSION TRACKING\n{website_objectives or 'Drive traffic to optimized landing pages focused on conversion.'}\n{conversion_tracking or 'Implement Google Analytics, conversion pixels, and attribution tracking across all channels.'}"
+    web_para.font.size = Pt(14)
+    web_para.font.color.rgb = dark_gray
+    web_para.line_spacing = 1.3
 
-    # 🎨 SLIDE 7: THANK YOU / CONTACT
+    # 🎨 SLIDE 7: MEDIA BRIEF SUMMARY
     slide = prs.slides.add_slide(layout)
     
     # Gradient background
@@ -1338,26 +1326,27 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
     bg_fill.solid()
     bg_fill.fore_color.rgb = primary_color
     
-    # Thank you message
-    thank_you_box = slide.shapes.add_textbox(Inches(1), Inches(2.5), Inches(8), Inches(2))
-    thank_you_frame = thank_you_box.text_frame
-    thank_you_frame.clear()
-    thank_you_para = thank_you_frame.paragraphs[0]
-    thank_you_para.text = "🙏 THANK YOU"
-    thank_you_para.font.size = Pt(48)
-    thank_you_para.font.bold = True
-    thank_you_para.font.color.rgb = RGBColor(255, 255, 255)
-    thank_you_para.alignment = PP_ALIGN.CENTER
+    # Title
+    title_box = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(8), Inches(1.5))
+    title_frame = title_box.text_frame
+    title_frame.clear()
+    title_para = title_frame.paragraphs[0]
+    title_para.text = "MEDIA BRIEF COMPLETE"
+    title_para.font.size = Pt(42)
+    title_para.font.bold = True
+    title_para.font.color.rgb = RGBColor(255, 255, 255)
+    title_para.alignment = PP_ALIGN.CENTER
     
-    # Subtitle
-    subtitle_box = slide.shapes.add_textbox(Inches(1), Inches(4), Inches(8), Inches(1))
-    subtitle_frame = subtitle_box.text_frame
-    subtitle_frame.clear()
-    subtitle_para = subtitle_frame.paragraphs[0]
-    subtitle_para.text = f"🚀 Ready to dominate the {research.industry} market!"
-    subtitle_para.font.size = Pt(20)
-    subtitle_para.font.color.rgb = accent_color
-    subtitle_para.alignment = PP_ALIGN.CENTER
+    # Summary
+    summary_box = slide.shapes.add_textbox(Inches(1), Inches(3.5), Inches(8), Inches(2))
+    summary_frame = summary_box.text_frame
+    summary_frame.clear()
+    summary_para = summary_frame.paragraphs[0]
+    summary_para.text = f"Ready to execute strategic media campaign for {brand}\nBudget: ${strategy.total_budget_usd:,.0f} | Timeline: {len(strategy.timeline)} phases\nTarget: {research.country} {research.industry} market"
+    summary_para.font.size = Pt(18)
+    summary_para.font.color.rgb = accent_color
+    summary_para.alignment = PP_ALIGN.CENTER
+    summary_para.line_spacing = 1.4
 
     buf = io.BytesIO()
     prs.save(buf)
@@ -1367,54 +1356,78 @@ async def build_ppt(brand: str, research: ResearchResult, strategy: StrategyPlan
 
 async def build_pdf(brand: str, research: ResearchResult, strategy: StrategyPlan, language: Optional[str] = None, use_cache: bool = True) -> io.BytesIO:
     try:
-        sections = await call_groq_doc_sections(research, strategy, doc_type="pdf", language=language, use_cache=use_cache)
+        sections = await call_groq_media_brief_sections(research, strategy, doc_type="pdf", language=language, use_cache=use_cache)
     except HTTPException:
         sections = {}
+    
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4)
     styles = getSampleStyleSheet()
     story: List[Any] = []
-    story.append(Paragraph(f"{brand} Market Research & Strategy", styles["Title"]))
+    
+    # Title and Client Info
+    client_info = sections.get("client_info", {}) if isinstance(sections, dict) else {}
+    story.append(Paragraph("MEDIA BRIEF", styles["Title"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph("Executive Summary", styles["Heading2"]))
-    story.append(Paragraph((sections.get("executive_summary") if isinstance(sections, dict) else None) or research.summary or "Generated research summary.", styles["BodyText"]))
+    story.append(Paragraph(f"Client: {brand}", styles["Heading2"]))
+    story.append(Paragraph(f"Brand/Product: {client_info.get('product', research.industry)}", styles["BodyText"]))
+    story.append(Paragraph(f"Brief Prepared By: {client_info.get('brief_prepared_by', 'AI Media Research')}", styles["BodyText"]))
+    story.append(Paragraph(f"Date of Briefing: {client_info.get('date_of_briefing', datetime.now().strftime('%Y-%m-%d'))}", styles["BodyText"]))
+    story.append(Paragraph(f"Deadline: {client_info.get('deadline', (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'))}", styles["BodyText"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph("Competitors", styles["Heading2"]))
-    comp_rows = [["Name", "Website", "Summary"]]
-    for c in research.competitors[:10]:
-        comp_rows.append([c.name, c.website or "", (c.summary or "")[:160]])
-    table = Table(comp_rows, repeatRows=1)
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-    ]))
-    story.append(table)
+    
+    # Marketing Objectives
+    story.append(Paragraph("1.0 MARKETING OBJECTIVES", styles["Heading2"]))
+    marketing_objectives = sections.get("marketing_objectives", "") if isinstance(sections, dict) else ""
+    story.append(Paragraph(marketing_objectives or f"Drive brand awareness and market penetration for {brand} in the {research.industry} sector with focus on {research.country} market.", styles["BodyText"]))
     story.append(Spacer(1, 12))
-    if isinstance(sections, dict) and sections.get("recommendations"):
-        story.append(Paragraph("Recommendations", styles["Heading2"]))
-        for rec in sections["recommendations"][:10]:
-            story.append(Paragraph(f"• {rec}", styles["BodyText"]))
-        story.append(Spacer(1, 12))
-    story.append(Paragraph("Budget Allocation", styles["Heading2"]))
+    
+    # Communication Objectives  
+    story.append(Paragraph("1.1 COMMUNICATION OBJECTIVES", styles["Heading2"]))
+    comm_objectives = sections.get("communication_objectives", "") if isinstance(sections, dict) else ""
+    story.append(Paragraph(comm_objectives or "Increase brand awareness, improve brand perception, and drive customer consideration through strategic media placement and messaging.", styles["BodyText"]))
+    story.append(Spacer(1, 12))
+    
+    # Brand Information
+    story.append(Paragraph("2.0 BRAND INFORMATION", styles["Heading2"]))
+    brand_positioning = sections.get("brand_positioning", "") if isinstance(sections, dict) else ""
+    story.append(Paragraph("2.1 Brand Positioning:", styles["Heading3"]))
+    story.append(Paragraph(brand_positioning or f"{brand} is positioned as a premium, innovative leader in the {research.industry} market, delivering superior value and customer experience.", styles["BodyText"]))
+    story.append(Spacer(1, 6))
+    
+    brand_proposition = sections.get("brand_proposition", "") if isinstance(sections, dict) else ""
+    story.append(Paragraph("2.2 Brand Proposition:", styles["Heading3"]))
+    story.append(Paragraph(brand_proposition or f"Unique value proposition combining cutting-edge technology, superior quality, and exceptional customer service that sets {brand} apart from competitors.", styles["BodyText"]))
+    story.append(Spacer(1, 12))
+    
+    # Target Audience
+    story.append(Paragraph("2.2 TARGET AUDIENCE", styles["Heading2"]))
+    target_audience = sections.get("target_audience", {}) if isinstance(sections, dict) else {}
+    demographics = target_audience.get("demographics", "")
+    story.append(Paragraph("Demographics:", styles["Heading3"]))
+    story.append(Paragraph(demographics or f"Primary audience: {research.country} market, adults 25-54, middle to high income, tech-savvy professionals interested in {research.industry}.", styles["BodyText"]))
+    story.append(Spacer(1, 12))
+    
+    # Budget Allocation
+    story.append(Paragraph("3.0 BUDGET PROVISIONS", styles["Heading2"]))
+    story.append(Paragraph(f"Total Budget: ${strategy.total_budget_usd:,.0f}", styles["BodyText"]))
     chart_buf = generate_budget_chart(strategy.allocations)
     image_reader = ImageReader(chart_buf)
     story.append(RLImage(image_reader, width=400, height=260))
     story.append(Spacer(1, 12))
-    story.append(Paragraph("SWOT", styles["Heading2"]))
-    swot_values = (sections.get("swot") if isinstance(sections, dict) else None) or strategy.swot
-    swot_rows = [["S", ", ".join(swot_values.get("strengths", []))], ["W", ", ".join(swot_values.get("weaknesses", []))], ["O", ", ".join(swot_values.get("opportunities", []))], ["T", ", ".join(swot_values.get("threats", []))]]
-    swot_table = Table(swot_rows)
-    swot_table.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.grey)]))
-    story.append(swot_table)
+    
+    # Digital Campaign Specifics
+    story.append(Paragraph("4.0 DIGITAL CAMPAIGN SPECIFICS", styles["Heading2"]))
+    digital_kpis = sections.get("digital_kpis", "") if isinstance(sections, dict) else ""
+    story.append(Paragraph("KPIs:", styles["Heading3"]))
+    story.append(Paragraph(digital_kpis or f"Primary KPIs: {', '.join(strategy.kpis[:5])}", styles["BodyText"]))
+    story.append(Spacer(1, 6))
+    
+    campaign_duration = sections.get("campaign_duration", "") if isinstance(sections, dict) else ""
+    story.append(Paragraph("Campaign Duration:", styles["Heading3"]))
+    story.append(Paragraph(campaign_duration or f"Campaign runs for {len(strategy.timeline)} phases, approximately {len(strategy.media_calendar) // 4} months with continuous optimization.", styles["BodyText"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph("Timeline", styles["Heading2"]))
-    if isinstance(sections, dict) and sections.get("timeline_bullets"):
-        for line in sections["timeline_bullets"][:10]:
-            story.append(Paragraph(str(line), styles["BodyText"]))
-    else:
-        for phase in strategy.timeline:
-            story.append(Paragraph(f"{phase['phase']}: {phase['start']} → {phase['end']}", styles["BodyText"]))
+    
     doc.build(story)
     buf.seek(0)
     return buf
@@ -1424,45 +1437,93 @@ async def build_docx(brand: str, research: ResearchResult, strategy: StrategyPla
     if Document is None:
         raise HTTPException(status_code=501, detail="python-docx not installed")
     try:
-        sections = await call_groq_doc_sections(research, strategy, doc_type="docx", language=language, use_cache=use_cache)
+        sections = await call_groq_media_brief_sections(research, strategy, doc_type="docx", language=language, use_cache=use_cache)
     except HTTPException:
         sections = {}
+    
     doc = Document()
-    doc.add_heading(f"{brand} Market Research & Strategy", 0)
-    doc.add_heading("Executive Summary", level=1)
-    doc.add_paragraph((sections.get("executive_summary") if isinstance(sections, dict) else None) or research.summary or "Generated research summary.")
-    doc.add_heading("Competitors", level=1)
-    table = doc.add_table(rows=1, cols=3)
-    hdr_cells = table.rows[0].cells
-    hdr_cells[0].text = "Name"
-    hdr_cells[1].text = "Website"
-    hdr_cells[2].text = "Summary"
-    for c in research.competitors[:10]:
-        row_cells = table.add_row().cells
-        row_cells[0].text = c.name
-        row_cells[1].text = c.website or ""
-        row_cells[2].text = (c.summary or "")[:200]
-    if isinstance(sections, dict) and sections.get("recommendations"):
-        doc.add_heading("Recommendations", level=1)
-        for rec in sections["recommendations"][:10]:
-            doc.add_paragraph(rec, style="List Bullet")
-    doc.add_heading("Budget Allocation", level=1)
+    doc.add_heading("MEDIA BRIEF", 0)
+    
+    # Client Information
+    client_info = sections.get("client_info", {}) if isinstance(sections, dict) else {}
+    doc.add_heading("Client Information", level=1)
+    doc.add_paragraph(f"Client: {brand}")
+    doc.add_paragraph(f"Brand/Product: {client_info.get('product', research.industry)}")
+    doc.add_paragraph(f"Brief Prepared By: {client_info.get('brief_prepared_by', 'AI Media Research')}")
+    doc.add_paragraph(f"Date of Briefing: {client_info.get('date_of_briefing', datetime.now().strftime('%Y-%m-%d'))}")
+    doc.add_paragraph(f"Deadline: {client_info.get('deadline', (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'))}")
+    
+    # Marketing Objectives
+    doc.add_heading("1.0 Marketing Objectives", level=1)
+    marketing_objectives = sections.get("marketing_objectives", "") if isinstance(sections, dict) else ""
+    doc.add_paragraph(marketing_objectives or f"Drive brand awareness and market penetration for {brand} in the {research.industry} sector with focus on {research.country} market.")
+    
+    # Communication Objectives
+    doc.add_heading("1.1 Communication Objectives", level=2)
+    comm_objectives = sections.get("communication_objectives", "") if isinstance(sections, dict) else ""
+    doc.add_paragraph(comm_objectives or "Increase brand awareness, improve brand perception, and drive customer consideration through strategic media placement and messaging.")
+    
+    # Tone & Manner
+    doc.add_heading("1.2 Tone & Manner of Communication", level=2)
+    tone_manner = sections.get("tone_manner", "") if isinstance(sections, dict) else ""
+    doc.add_paragraph(tone_manner or "Professional, innovative, and trustworthy communication that resonates with target audience values and aspirations.")
+    
+    # Brand Information
+    doc.add_heading("2.0 Brand Information", level=1)
+    brand_positioning = sections.get("brand_positioning", "") if isinstance(sections, dict) else ""
+    doc.add_heading("2.1 Brand Positioning", level=2)
+    doc.add_paragraph(brand_positioning or f"{brand} is positioned as a premium, innovative leader in the {research.industry} market, delivering superior value and customer experience.")
+    
+    brand_proposition = sections.get("brand_proposition", "") if isinstance(sections, dict) else ""
+    doc.add_heading("2.2 Brand Proposition / Benefit", level=2)
+    doc.add_paragraph(brand_proposition or f"Unique value proposition combining cutting-edge technology, superior quality, and exceptional customer service that sets {brand} apart from competitors.")
+    
+    # Target Audience
+    doc.add_heading("2.2 Target Audience", level=1)
+    target_audience = sections.get("target_audience", {}) if isinstance(sections, dict) else {}
+    
+    demographics = target_audience.get("demographics", "")
+    doc.add_heading("Demographics", level=2)
+    doc.add_paragraph(demographics or f"Primary audience: {research.country} market, adults 25-54, middle to high income, tech-savvy professionals interested in {research.industry}.")
+    
+    psychographics = target_audience.get("psychographics", "")
+    doc.add_heading("Psychographics / Lifestyle", level=2)
+    doc.add_paragraph(psychographics or "Values innovation, quality, and sustainability. Early adopters who influence others. Active on social media and research before purchasing.")
+    
+    # Executional Considerations
+    doc.add_heading("3.0 Executional Considerations", level=1)
+    media_considerations = sections.get("media_considerations", "") if isinstance(sections, dict) else ""
+    doc.add_heading("Media Considerations", level=2)
+    doc.add_paragraph(media_considerations or f"Focus on digital channels: Google Ads, Social Media, YouTube. Budget allocation: {strategy.allocations}")
+    
+    doc.add_heading("Budget Provisions", level=2)
+    budget_provisions = sections.get("budget_provisions", "") if isinstance(sections, dict) else ""
+    doc.add_paragraph(f"Total Budget: ${strategy.total_budget_usd:,.0f}")
+    doc.add_paragraph(budget_provisions or "Budget allocated across multiple channels with flexibility for optimization based on performance metrics.")
+    
+    # Budget Chart
     chart_buf = generate_budget_chart(strategy.allocations)
     chart_buf.name = "budget.png"
     doc.add_picture(chart_buf, width=None)
-    doc.add_heading("SWOT", level=1)
-    swot_values = (sections.get("swot") if isinstance(sections, dict) else None) or strategy.swot
-    for k in ["strengths", "weaknesses", "opportunities", "threats"]:
-        doc.add_heading(k.capitalize(), level=2)
-        for item in swot_values.get(k, []):
-            doc.add_paragraph(item, style="List Bullet")
-    doc.add_heading("Timeline", level=1)
-    if isinstance(sections, dict) and sections.get("timeline_bullets"):
-        for line in sections["timeline_bullets"][:12]:
-            doc.add_paragraph(str(line))
-    else:
-        for phase in strategy.timeline:
-            doc.add_paragraph(f"{phase['phase']}: {phase['start']} → {phase['end']}")
+    
+    # Digital Campaign Specifics
+    doc.add_heading("4.0 Digital/Online Campaign Only", level=1)
+    digital_kpis = sections.get("digital_kpis", "") if isinstance(sections, dict) else ""
+    doc.add_heading("KPI", level=2)
+    doc.add_paragraph(digital_kpis or f"Primary KPIs: {', '.join(strategy.kpis[:5])}")
+    
+    campaign_duration = sections.get("campaign_duration", "") if isinstance(sections, dict) else ""
+    doc.add_heading("Campaign Duration", level=2)
+    doc.add_paragraph(campaign_duration or f"Campaign runs for {len(strategy.timeline)} phases, approximately {len(strategy.media_calendar) // 4} months with continuous optimization.")
+    
+    website_objectives = sections.get("website_objectives", "") if isinstance(sections, dict) else ""
+    doc.add_heading("Website & Objectives", level=2)
+    doc.add_paragraph(website_objectives or "Drive traffic to optimized landing pages focused on conversion.")
+    
+    conversion_tracking = sections.get("conversion_tracking", "") if isinstance(sections, dict) else ""
+    doc.add_heading("Conversion Tracking", level=2)
+    doc.add_paragraph(conversion_tracking or "Implement Google Analytics, conversion pixels, and attribution tracking across all channels.")
+    
     buf = io.BytesIO()
     doc.save(buf)
     buf.seek(0)

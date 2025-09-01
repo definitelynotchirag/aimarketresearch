@@ -5,31 +5,31 @@ import { useNavigate } from 'react-router-dom';
 
 const features = [
   {
-    name: 'AI-Powered Research',
-    description: 'Deep competitor analysis using advanced AI to identify market opportunities and threats.',
+    name: 'AI-Powered Brief Generation',
+    description: 'Generate comprehensive media briefs with strategic objectives, target audience analysis, and execution plans.',
     icon: ChartBarIcon,
   },
   {
-    name: 'Strategic Planning',
-    description: 'Generate comprehensive media strategies with budget allocation and content recommendations.',
+    name: 'Media Planning',
+    description: 'Complete media brief including marketing objectives, brand positioning, and campaign specifics.',
     icon: LightBulbIcon,
   },
   {
-    name: 'Automated Reports',
-    description: 'Export professional PowerPoint, PDF, and Word documents with charts and insights.',
+    name: 'Professional Documents',
+    description: 'Export polished media briefs in PowerPoint, PDF, and Word formats ready for client presentation.',
     icon: DocumentTextIcon,
   },
   {
-    name: 'Real-time Intelligence',
-    description: 'Access up-to-date market data and competitor intelligence from multiple sources.',
+    name: 'Strategic Intelligence',
+    description: 'Leverage market research and competitive intelligence to inform your media strategy.',
     icon: CogIcon,
   },
 ];
 
 const stats = [
-  { name: 'Competitors Analyzed', value: '10,000+' },
-  { name: 'Markets Researched', value: '50+' },
-  { name: 'Reports Generated', value: '1,000+' },
+  { name: 'Media Briefs Generated', value: '10,000+' },
+  { name: 'Markets Analyzed', value: '50+' },
+  { name: 'Campaigns Planned', value: '1,000+' },
   { name: 'Success Rate', value: '95%' },
 ];
 
@@ -56,7 +56,7 @@ const Landing = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-xl font-semibold text-primary">AI Media Research</h1>
+                <h1 className="text-xl font-semibold text-primary">AI Media Brief Generator</h1>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -76,19 +76,19 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-text-primary mb-6 animate-fade-in">
-              AI-Powered Media Research
-              <span className="block text-primary">& Strategy Platform</span>
+              AI-Powered Media Brief
+              <span className="block text-primary">Generator</span>
             </h1>
             <p className="text-xl text-text-secondary max-w-3xl mx-auto mb-10 animate-fade-in [animation-delay:200ms]">
-              Automate competitor analysis, market research, and media strategy planning with AI. 
-              Generate professional reports in minutes, not weeks.
+              Generate comprehensive media briefs with strategic objectives, target audience analysis, and campaign specifics. 
+              Create professional client-ready documents in minutes, not hours.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in [animation-delay:400ms]">
               <Button size="lg" onClick={handleGetStarted} className="px-8 py-3 transition-transform hover:scale-105">
-                Start Research Now
+                Create Media Brief
               </Button>
               <Button variant="outline" size="lg" className="px-8 py-3 transition-transform hover:scale-105">
-                View Demo
+                View Sample Brief
               </Button>
             </div>
           </div>
@@ -114,10 +114,10 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-text-primary mb-4">
-              Everything you need for market intelligence
+              Everything you need for media brief creation
             </h2>
             <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-              From competitor identification to strategy execution, our AI platform handles the entire research workflow.
+              From market research to strategic planning, our AI platform creates comprehensive media briefs ready for client presentation.
             </p>
           </div>
 
@@ -140,7 +140,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-text-primary mb-4">
-              Research in 3 simple steps
+              Media brief creation in 3 simple steps
             </h2>
           </div>
 
@@ -149,22 +149,22 @@ const Landing = () => {
               <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold transition-transform hover:scale-110">
                 1
               </div>
-              <h3 className="text-lg font-semibold text-text-primary mb-2">Input Your Brand</h3>
-              <p className="text-text-secondary">Enter your brand, industry, and target market details</p>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">Input Campaign Details</h3>
+              <p className="text-text-secondary">Enter your brand, campaign goals, budget, and target market</p>
             </div>
             <div className="text-center animate-fade-in" style={{ animationDelay: '200ms' }}>
               <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold transition-transform hover:scale-110">
                 2
               </div>
-              <h3 className="text-lg font-semibold text-text-primary mb-2">AI Analysis</h3>
-              <p className="text-text-secondary">Our AI researches competitors and analyzes market trends</p>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">AI Brief Generation</h3>
+              <p className="text-text-secondary">AI creates comprehensive media brief with objectives, audience, and strategy</p>
             </div>
             <div className="text-center animate-fade-in" style={{ animationDelay: '300ms' }}>
               <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold transition-transform hover:scale-110">
                 3
               </div>
-              <h3 className="text-lg font-semibold text-text-primary mb-2">Get Reports</h3>
-              <p className="text-text-secondary">Download professional strategy reports and presentations</p>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">Download & Present</h3>
+              <p className="text-text-secondary">Get professional media briefs in PowerPoint, PDF, and Word formats</p>
             </div>
           </div>
         </div>
@@ -174,14 +174,14 @@ const Landing = () => {
       <section className="py-20">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-text-primary mb-4">
-            Ready to revolutionize your market research?
+            Ready to streamline your media briefing process?
           </h2>
           <p className="text-lg text-text-secondary mb-8">
-            Join hundreds of marketers already using AI to gain competitive advantage.
+            Join hundreds of agencies and marketers using AI to create professional media briefs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" onClick={handleGetStarted} className="px-8 py-3">
-              Start Free Research
+              Create Your First Brief
             </Button>
           </div>
 
@@ -207,9 +207,9 @@ const Landing = () => {
       <footer className="border-t border-border py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-primary mb-4">AI Media Research</h3>
+            <h3 className="text-lg font-semibold text-primary mb-4">AI Media Brief Generator</h3>
             <p className="text-text-secondary">
-              © 2024 AI Media Research Platform. All rights reserved.
+              © 2024 AI Media Brief Generator. All rights reserved.
             </p>
           </div>
         </div>

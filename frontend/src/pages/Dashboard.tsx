@@ -60,7 +60,7 @@ const Dashboard = () => {
               className="text-xl font-semibold text-primary cursor-pointer" 
               onClick={goToLanding}
             >
-              AI Media Research
+              AI Media Brief Generator
             </h1>
             <div className="flex items-center gap-4">
               <Button variant="ghost" onClick={goToLanding}>
@@ -74,8 +74,8 @@ const Dashboard = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8 animate-fade-in">
-          <h1 className="text-3xl font-bold text-text-primary mb-2">Research Dashboard</h1>
-          <p className="text-text-secondary">Enter your brand details to start AI-powered market research and strategy planning.</p>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">Media Brief Dashboard</h1>
+          <p className="text-text-secondary">Enter your campaign details to generate a comprehensive AI-powered media brief.</p>
         </div>
 
         {/* Quick Stats */}
@@ -85,8 +85,8 @@ const Dashboard = () => {
               <div className="flex items-center">
                 <ChartBarIcon className="h-8 w-8 text-ai-blue mr-3" />
                 <div>
-                  <p className="text-sm text-text-secondary">Research Time</p>
-                  <p className="text-2xl font-bold text-text-primary">~2 min</p>
+                  <p className="text-sm text-text-secondary">Brief Generation</p>
+                  <p className="text-2xl font-bold text-text-primary">~3 min</p>
                 </div>
               </div>
             </CardContent>
@@ -96,7 +96,7 @@ const Dashboard = () => {
               <div className="flex items-center">
                 <DocumentTextIcon className="h-8 w-8 text-ai-green mr-3" />
                 <div>
-                  <p className="text-sm text-text-secondary">Report Formats</p>
+                  <p className="text-sm text-text-secondary">Document Formats</p>
                   <p className="text-2xl font-bold text-text-primary">3 Types</p>
                 </div>
               </div>
@@ -107,8 +107,8 @@ const Dashboard = () => {
               <div className="flex items-center">
                 <PlayIcon className="h-8 w-8 text-primary mr-3" />
                 <div>
-                  <p className="text-sm text-text-secondary">Ready to Start</p>
-                  <p className="text-2xl font-bold text-text-primary">Now</p>
+                  <p className="text-sm text-text-secondary">Professional Brief</p>
+                  <p className="text-2xl font-bold text-text-primary">Ready</p>
                 </div>
               </div>
             </CardContent>
@@ -118,10 +118,9 @@ const Dashboard = () => {
         {/* Research Form */}
         <Card className="animate-fade-in" style={{ animationDelay: '400ms' }}>
           <CardHeader>
-            <CardTitle>Start New Research</CardTitle>
+            <CardTitle>Create Media Brief</CardTitle>
             <CardDescription>
-              Provide details about your brand and research goals. Our AI will analyze competitors, 
-              market trends, and generate comprehensive strategy recommendations.
+              Provide details about your brand and campaign objectives. Our AI will generate a comprehensive media brief with strategic objectives, target audience analysis, and execution guidelines.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -218,10 +217,10 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="goals">Marketing Goals (comma-separated)</Label>
+              <Label htmlFor="goals">Campaign Objectives (comma-separated)</Label>
               <Textarea
                 id="goals"
-                placeholder="e.g., awareness, leads, sales, retention, brand building"
+                placeholder="e.g., brand awareness, lead generation, sales conversion, market penetration, brand building"
                 value={formData.goals.join(', ')}
                 onChange={(e) => handleGoalsChange(e.target.value)}
                 rows={2}
@@ -236,7 +235,7 @@ const Dashboard = () => {
                 className="flex-1 transition-transform hover:scale-105"
                 size="lg"
               >
-                {isLoading ? 'Starting Research...' : 'Start AI Research'}
+                {isLoading ? 'Generating Brief...' : 'Generate Media Brief'}
               </Button>
               <Button 
                 variant="outline" 
@@ -261,9 +260,9 @@ const Dashboard = () => {
             {/* Info Text */}
             <div className="text-sm text-text-tertiary bg-surface-secondary p-4 rounded-lg">
               <p className="mb-1"><strong>What happens next:</strong></p>
-              <p>• AI analyzes your competitors and market trends</p>
-              <p>• Strategic recommendations are generated</p>
-              <p>• Professional reports become available for download</p>
+              <p>• AI conducts market research and competitive analysis</p>
+              <p>• Comprehensive media brief with objectives and strategy is generated</p>
+              <p>• Professional documents become available for download (PowerPoint, PDF, Word)</p>
             </div>
           </CardContent>
         </Card>

@@ -1,14 +1,13 @@
-import axios from 'axios';
 import {
+  ReportGenerationRequest,
   ResearchRequest,
   ResearchResponse,
   StrategyRequest,
   StrategyResponse,
   WorkflowRequest,
-  WorkflowResponse,
-  ReportGenerationRequest,
-  ApiError
+  WorkflowResponse
 } from '@/types/api';
+import axios from 'axios';
 
 // Configure axios defaults
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -20,7 +19,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'x-api-key': API_KEY,
   },
-  timeout: 120000, // 2 minutes timeout for AI processing
+  timeout: 1000000, // 10 minutes timeout for AI processing
 });
 
 // Response interceptor for error handling
