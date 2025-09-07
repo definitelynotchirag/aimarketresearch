@@ -894,7 +894,7 @@ async def call_groq_media_brief_sections(
         if cached_time and (datetime.utcnow() - cached_time).total_seconds() < 60 * 60 * 12:
             return cached["data"]
     system_prompt = (
-        "You are a senior media strategist and briefing expert. Generate a comprehensive media brief document. Return one JSON object only. "
+        "You are a senior media strategist and briefing expert. Generate a comprehensive media brief document. Each of the sections should be very big and detailed and rich in content. They should be in depth and comprehensive. They should be very detailed and comprehensive. Return one JSON object only. "
         "Output schema: {\n"
         "  \"client_info\": { \"brand\": string, \"product\": string, \"brief_prepared_by\": string, \"date_of_briefing\": string, \"deadline\": string },\n"
         "  \"marketing_objectives\": string,\n"
