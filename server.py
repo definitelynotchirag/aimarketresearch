@@ -14,7 +14,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout, ClientError
 from dotenv import load_dotenv
 
 from pptx import Presentation
@@ -128,7 +128,13 @@ app.add_middleware(
 async def get_http_session() -> ClientSession:
     session: Optional[ClientSession] = getattr(app.state, "http_session", None)
     if session is None or session.closed:
-        session = ClientSession(timeout=None)
+        # Configure timeout with reasonable values
+        timeout = ClientTimeout(
+            total=900,  # 15 minutes total timeout
+            connect=30,  # 30 seconds to establish connection
+            sock_read=300,  # 5 minutes to read data
+        )
+        session = ClientSession(timeout=timeout)
         app.state.http_session = session
     return session
 
@@ -516,12 +522,13 @@ async def call_jina_deepsearch_structured(req: ResearchRequest) -> Dict[str, Any
         "model": "jina-deepsearch-v1",
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt},
         ],
         "stream": False,
         "reasoning_effort": "low",
         "temperature": 0.2,
-        "response_format": {"type": "json_object"}
+        "response_format": {"type": "json_object"},
+        "budget_tokens": 100000,
     }
     async with app.state.jina_lock:
         async with session.post(url, headers=headers, json=payload) as resp:
@@ -530,24 +537,24 @@ async def call_jina_deepsearch_structured(req: ResearchRequest) -> Dict[str, Any
                 print(f"Jina API Error {resp.status}: {text}")
                 raise HTTPException(status_code=502, detail=f"Jina API error: {resp.status} {text}")
             data = await resp.json()
-    
+
     print(f"Jina API Response: {json.dumps(data, indent=2)}")
-    
+
     try:
         content = data["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as e:
         print(f"Jina response structure error: {e}")
         print(f"Response keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
         raise HTTPException(status_code=502, detail=f"Jina API unexpected response format: {str(e)}")
-    
+
     print(f"Jina content: {content}")
-    
+
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError as e:
         print(f"JSON parse error: {e}")
         print(f"Content that failed to parse: {content[:500]}...")
-        
+
         # Use Groq to parse the markdown content into structured JSON
         parsed = await parse_with_groq(content, req.brand, req.country, req.industry)
         if parsed:
@@ -568,7 +575,7 @@ async def call_jina_deepsearch_structured(req: ResearchRequest) -> Dict[str, Any
             "sources": []
         }
         print(f"Using fallback data: {parsed}")
-    
+
     app.state.jina_cache[cache_key] = {"data": parsed, "_cached_at": datetime.utcnow()}
     return parsed
 
@@ -1703,5 +1710,3 @@ async def workflow(req: WorkflowRequest) -> Dict[str, Any]:
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("server:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")), reload=True)
-
-
