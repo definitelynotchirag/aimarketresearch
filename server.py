@@ -130,9 +130,9 @@ async def get_http_session() -> ClientSession:
     if session is None or session.closed:
         # Configure timeout with reasonable values
         timeout = ClientTimeout(
-            total=900,  # 15 minutes total timeout
+            total=1200,  # 20 minutes total timeout
             connect=30,  # 30 seconds to establish connection
-            sock_read=300,  # 5 minutes to read data
+            sock_read=600,  # 10 minutes to read data
         )
         session = ClientSession(timeout=timeout)
         app.state.http_session = session
