@@ -130,9 +130,9 @@ async def get_http_session() -> ClientSession:
     if session is None or session.closed:
         # Configure timeout with reasonable values
         timeout = ClientTimeout(
-            total=900,  # 15 minutes total timeout
-            connect=30,  # 30 seconds to establish connection
-            sock_read=300,  # 5 minutes to read data
+            total=1000,  # 15 minutes total timeout
+            connect=1000,  # 30 seconds to establish connection
+            sock_read=1000,  # 5 minutes to read data
         )
         session = ClientSession(timeout=timeout)
         app.state.http_session = session
@@ -528,8 +528,9 @@ async def call_jina_deepsearch_structured(req: ResearchRequest) -> Dict[str, Any
         "reasoning_effort": "low",
         "temperature": 0.2,
         "response_format": {"type": "json_object"},
-        "budget_tokens": 100000,
+        "budget_tokens": 50000,
     }
+    print(payload)
     async with app.state.jina_lock:
         async with session.post(url, headers=headers, json=payload) as resp:
             if resp.status != 200:
@@ -1378,7 +1379,7 @@ async def build_pdf(brand: str, research: ResearchResult, strategy: StrategyPlan
     story.append(Spacer(1, 12))
     story.append(Paragraph(f"Client: {brand}", styles["Heading2"]))
     story.append(Paragraph(f"Brand/Product: {client_info.get('product', research.industry)}", styles["BodyText"]))
-    story.append(Paragraph(f"Brief Prepared By: {client_info.get('brief_prepared_by', 'AI Media Research')}", styles["BodyText"]))
+    story.append(Paragraph(f"Brief Prepared By: AI Media Research", styles["BodyText"]))
     story.append(Paragraph(f"Date of Briefing: {client_info.get('date_of_briefing', datetime.now().strftime('%Y-%m-%d'))}", styles["BodyText"]))
     story.append(Paragraph(f"Deadline: {client_info.get('deadline', (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'))}", styles["BodyText"]))
     story.append(Spacer(1, 12))
@@ -1456,7 +1457,7 @@ async def build_docx(brand: str, research: ResearchResult, strategy: StrategyPla
     doc.add_heading("Client Information", level=1)
     doc.add_paragraph(f"Client: {brand}")
     doc.add_paragraph(f"Brand/Product: {client_info.get('product', research.industry)}")
-    doc.add_paragraph(f"Brief Prepared By: {client_info.get('brief_prepared_by', 'AI Media Research')}")
+    doc.add_paragraph(f"Brief Prepared By: AI Media Research")
     doc.add_paragraph(f"Date of Briefing: {client_info.get('date_of_briefing', datetime.now().strftime('%Y-%m-%d'))}")
     doc.add_paragraph(f"Deadline: {client_info.get('deadline', (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'))}")
     
